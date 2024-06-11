@@ -1,110 +1,106 @@
-version: '3'
+version: '3'  # 指定使用 Docker Compose 文件的版本
 
 services:
   ToolServerManager:
-    image: xagentteam/toolserver-manager:latest
+    image: xagentteam/toolserver-manager:latest  # 使用最新的 toolserver-manager 镜像
     build:
-      context: ./
-      dockerfile: dockerfiles/ToolServerManager/Dockerfile
+      context: ./  # 构建镜像时的上下文目录
+      dockerfile: dockerfiles/ToolServerManager/Dockerfile  # 指定 Dockerfile 的路径
     ports:
-      - 8080:8080
+      - 8080:8080  # 映射主机的 8080 端口到容器的 8080 端口
     volumes:
-      - toolserverconfig:/app/assets/config
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-     DB_HOST: db
-     DB_PORT: 27017
-     DB_USERNAME: ${DB_USERNAME}
-     DB_PASSWORD: ${DB_PASSWORD}
-     DB_COLLECTION: ${DB_COLLECTION}
+      - toolserverconfig:/app/assets/config  # 挂载 toolserverconfig 卷到容器内指定路径
+      - /var/run/docker.sock:/var/run/docker.sock  # 挂载 Docker socket，便于容器管理
+    environment:  # 环境变量配置
+     DB_HOST: db  # 数据库主机地址
+     DB_PORT: 27017  # 数据库端口
+     DB_USERNAME: ${DB_USERNAME}  # 数据库用户名，使用环境变量
+     DB_PASSWORD: ${DB_PASSWORD}  # 数据库密码，使用环境变量
+     DB_COLLECTION: ${DB_COLLECTION}  # 数据库集合，使用环境变量
     depends_on:
-      - db
-    command: ["--workers","2","-t","600"]
+      - db  # 指定依赖服务 db
+    command: ["--workers","2","-t","600"]  # 指定启动命令及参数
 
-  # This will create a test node that will never be used by XAgent
   ToolServerNode:
-    image: xagentteam/toolserver-node:latest
+    image: xagentteam/toolserver-node:latest  # 使用最新的 toolserver-node 镜像
     build:
-      context: ./
-      dockerfile: dockerfiles/ToolServerNode/Dockerfile
+      context: ./  # 构建镜像时的上下文目录
+      dockerfile: dockerfiles/ToolServerNode/Dockerfile  # 指定 Dockerfile 的路径
     volumes:
-      - "toolserverconfig:/app/assets/config"
+      - "toolserverconfig:/app/assets/config"  # 挂载 toolserverconfig 卷到容器内指定路径
 
   db:
-    image: mongo
+    image: mongo  # 使用 MongoDB 官方镜像
     volumes:
-      - xagentmongodb:/data/db
-    environment:
-     MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
-     MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+      - xagentmongodb:/data/db  # 挂载 xagentmongodb 卷到容器内的数据库存储路径
+    environment:  # 环境变量配置
+     MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}  # 初始 MongoDB 用户名，使用环境变量
+     MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}  # 初始 MongoDB 密码，使用环境变量
     logging:
-      driver: "none"
+      driver: "none"  # 禁用日志记录
 
   XAgentServer:
-    image: xagentteam/xagent-server:latest
+    image: xagentteam/xagent-server:latest  # 使用最新的 xagent-server 镜像
     build:
-      context: ./
-      dockerfile: dockerfiles/XAgentServer/Dockerfile
-    container_name: XAgent-Server
+      context: ./  # 构建镜像时的上下文目录
+      dockerfile: dockerfiles/XAgentServer/Dockerfile  # 指定 Dockerfile 的路径
+    container_name: XAgent-Server  # 指定容器名称
     env_file:
-      - .env
-    environment:
-      - TOOLSERVER_URL=http://ToolServerManager:8080
-      - MYSQL_DB_URL=mysql+pymysql://root:xagent@xagent-mysql:3306/xagent
-      - REDIS_HOST=xagent-redis
+      - .env  # 指定环境变量文件
+    environment:  # 环境变量配置
+      - TOOLSERVER_URL=http://ToolServerManager:8080  # ToolServerManager 的 URL
+      - MYSQL_DB_URL=mysql+pymysql://root:xagent@xagent-mysql:3306/xagent  # MySQL 数据库 URL
+      - REDIS_HOST=xagent-redis  # Redis 主机地址
     volumes:
-      - ./assets:/app/assets:ro
+      - ./assets:/app/assets:ro  # 挂载本地 assets 目录到容器内路径，以只读方式
     ports:
-      - "5173:5173"
-      - "8090:8090"
+      - "5173:5173"  # 映射主机的 5173 端口到容器的 5173 端口
+      - "8090:8090"  # 映射主机的 8090 端口到容器的 8090 端口
     depends_on:
       xagent-mysql:
-        condition: service_healthy
+        condition: service_healthy  # 依赖服务 xagent-mysql 并在其健康时启动
       xagent-redis:
-        condition: service_healthy
+        condition: service_healthy  # 依赖服务 xagent-redis 并在其健康时启动
 
   xagent-mysql:
-    image: mysql
-    command:
-      - --default-authentication-plugin=caching_sha2_password
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-    environment:
-      MYSQL_ROOT_PASSWORD: xagent
+    image: mysql  # 使用 MySQL 官方镜像
+    command:  # 指定启动命令及参数
+      - --default-authentication-plugin=caching_sha2_password  # 使用 caching_sha2_password 认证插件
+      - --character-set-server=utf8mb4  # 设置服务器字符集为 utf8mb4
+      - --collation-server=utf8mb4_unicode_ci  # 设置服务器校对规则为 utf8mb4_unicode_ci
+    environment:  # 环境变量配置
+      MYSQL_ROOT_PASSWORD: xagent  # MySQL root 用户密码
     ports:
-      - "3306:3306"
+      - "3306:3306"  # 映射主机的 3306 端口到容器的 3306 端口
     volumes:
-      - ./XAgentServer/database/sql:/docker-entrypoint-initdb.d
+      - ./XAgentServer/database/sql:/docker-entrypoint-initdb.d  # 挂载 SQL 脚本目录到容器内初始数据库路径
     healthcheck:
-      # test: [ "CMD", "mysqladmin","ping", "-h", "localhost" ]
-      test: ["CMD-SHELL", "mysql -h localhost -u root -pxagent -e 'SELECT 1'"]
-      #interval: 10s
-      timeout: 20s
-      retries: 20
+      test: ["CMD-SHELL", "mysql -h localhost -u root -pxagent -e 'SELECT 1'"]  # 健康检查命令
+      timeout: 20s  # 健康检查超时时间
+      retries: 20  # 健康检查重试次数
 
   xagent-redis:
-    image: redis
+    image: redis  # 使用 Redis 官方镜像
     ports:
-      - "6379:6379"
-    command: redis-server --requirepass xagent
+      - "6379:6379"  # 映射主机的 6379 端口到容器的 6379 端口
+    command: redis-server --requirepass xagent  # 指定 Redis 启动命令及参数
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-
+      test: [ "CMD", "redis-cli", "ping" ]  # 健康检查命令
+      interval: 5s  # 健康检查间隔时间
+      timeout: 3s  # 健康检查超时时间
+      retries: 20  # 健康检查重试次数
 
 volumes:
-  xagentmongodb:
-  toolserverconfig:
-    name: toolserverconfig
-    driver: local
+  xagentmongodb:  # 定义 xagentmongodb 卷
+  toolserverconfig:  # 定义 toolserverconfig 卷
+    name: toolserverconfig  # 卷名称
+    driver: local  # 使用本地卷驱动
     driver_opts:
-      type: none
-      device: ./assets/config
-      o: bind
+      type: none  # 卷类型
+      device: ./assets/config  # 本地设备路径
+      o: bind  # 使用绑定挂载方式
+
 networks:
   default:
-    name: tool-server-network
-    driver: bridge
+    name: tool-server-network  # 默认网络名称
+    driver: bridge  # 使用桥接网络驱动
