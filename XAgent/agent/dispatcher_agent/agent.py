@@ -11,27 +11,26 @@ from XAgent.agent.base_agent import BaseAgent
 
 class DispatcherAgent(BaseAgent):
     """
-    A subclass of BaseAgent whose primary function is to help dispatch tasks to 
-    different agent handlers based on the task requirements.
+    DispatcherAgent是BaseAgent的子类，其主要功能是根据任务需求将任务分配给不同的代理处理程序。
 
-    Attributes:
+    属性:
     ------------
     config : object
-        The configuration settings for the agent.
+        代理的配置设置。
     prompt_messages : List[Message]
-        The list of prompt messages for the agent to dispatch.
+        代理要分派的提示消息列表。
     """
     def __init__(self, config, prompt_messages: List[Message] = None):
         """
-        Initialize a DispatcherAgent instance.
+        初始化DispatcherAgent实例。
 
-        Args:
+        参数:
         -------
         config : object
-            The configuration settings for the agent.
-        prompt_messages : list, optional
-            The list of prompt messages for the agent to dispatch, defaults to None.
-            If not provided, default_prompt_messages is used instead.
+            代理的配置设置。
+        prompt_messages : list, 可选
+            代理要分派的提示消息列表，默认为None。
+            如果未提供，则使用default_prompt_messages。
         """
         self.config = config
         self.prompt_messages = (
@@ -41,28 +40,28 @@ class DispatcherAgent(BaseAgent):
     @property
     def default_prompt_messages(self):
         """
-        Returns the default system prompt messages in the form of a list of Message objects.
+        返回默认的系统提示消息，以Message对象列表的形式。
 
-        Returns:
+        返回:
         -----------
         list[Message] : 
-            A list containing the default prompt message.
+            包含默认提示消息的列表。
         """
         return [Message(role="system", content=SYSTEM_PROMPT)]
 
     def find_all_placeholders(self, prompt):
         """
-        Finds all placeholders within a prompt.
+        查找提示中所有的占位符。
 
-        Args:
+        参数:
         --------
         prompt : str
-            The string within which placeholders are to be found.
+            需要查找占位符的字符串。
 
-        Returns:
+        返回:
         --------
         list[str] : 
-            A list of all placeholders found within the prompt.
+            提示中所有找到的占位符列表。
         """
         return re.findall(r"{{(.*?)}}", prompt)
 
@@ -75,30 +74,29 @@ class DispatcherAgent(BaseAgent):
         retrieved_procedure: str,
     ):
         """
-        Constructs input messages by replacing placeholders in the prompt_messages 
-        with provided data.
+        通过用提供的数据替换prompt_messages中的占位符来构建输入消息。
 
-        Args:
+        参数:
         ---------
         task : str
-            The task to be completed.
+            要完成的任务。
         example_input : str
-            An example input for the task.
+            任务的示例输入。
         example_system_prompt : str
-            The example system prompt for the task.
+            任务的示例系统提示。
         example_user_prompt : str
-            The example user prompt for the task.
+            任务的示例用户提示。
         retrieved_procedure : str
-            The retrieved process for the task.
+            任务的检索过程。
 
-        Returns:
+        返回:
         ---------
         list[Message] :
-            A list containing the constructed input messages with placeholders replaced with provided data.
+            包含构建的输入消息的列表，占位符已替换为提供的数据。
         """
         prompt_messages = copy.deepcopy(self.prompt_messages)
-        # TODO: Make it more robust. Here we assume only the first message is system prompt
-        #       and we only update the placeholders in the first message.
+        # TODO: 使其更健壮。这里假设只有第一条消息是系统提示
+        #       并且我们只更新第一条消息中的占位符。
         prompt_messages[0].content = (
             prompt_messages[0]
             .content.replace("{{example_system_prompt}}", example_system_prompt)
@@ -110,44 +108,43 @@ class DispatcherAgent(BaseAgent):
 
     def extract_prompts_from_response(self, message):
         """
-        Extracts additional prompts from the dispatcher's response message.
+        从调度器的响应消息中提取额外的提示。
 
-        Args:
+        参数:
         --------
         message : str 
-           The response message from the dispatcher.
+           来自调度器的响应消息。
 
-        Returns:
+        返回:
         ---------
         str : 
-            The additional prompt extracted from the message; if not found, "" is returned.
-
+            从消息中提取的额外提示；如果未找到，返回""。
         """
         try:
             additional_prompt = re.findall(r"ADDITIONAL USER PROMPT:?\n```(.*)```", message['content'], re.DOTALL)[0].strip()
         except IndexError as e:
             logger.error(
-                f"Failed to extract prompts from the dispatcher's response:\n{message['content']}"
+                f"未能从调度器的响应中提取提示:\n{message['content']}"
             )
-            logger.error("Fallback to use the default prompts.")
+            logger.error("回退到使用默认提示。")
             additional_prompt = ""
         return additional_prompt
 
     def retrieved_procedure(self, query: str) -> str:
-        # TODO: this function should be implemented thru tool server
+        # TODO: 这个函数应该通过工具服务器实现
 
         """
-        Retrieves a procedure relevant to the given query from an external site.
+        从外部站点检索与给定查询相关的过程。
 
-        Args:
+        参数:
         --------
         query : str
-            The query to retrieve the relevant procedure.
+            要检索相关过程的查询。
 
-        Returns:
+        返回:
         ---------
         str : 
-            The relevant procedure retrieved; if retrieval fails, the string 'None' is returned.
+            检索到的相关过程；如果检索失败，返回字符串“None”。
         """
         
         url = "https://open-procedures.replit.app/search/"
@@ -159,8 +156,8 @@ class DispatcherAgent(BaseAgent):
                 "procedures"
             ][0]
         except:
-            # For someone, this failed for a super secure SSL reason.
-            # Since it's not strictly necessary, let's worry about that another day. Should probably log this somehow though.
+            # 对某些人来说，这失败是因为一个超级安全的SSL原因。
+            # 由于这不是严格必要的，我们可以在日后再处理这个问题。应该以某种方式记录这个问题。
             relevant_procedures = "None"
 
         return relevant_procedures
@@ -174,30 +171,29 @@ class DispatcherAgent(BaseAgent):
         stop=None,
         **args,
     ) -> List[Message]:
-        # TODO: should we consider additional messages when generating prompt?
-        # currently the plan generation and refine agent are the same since we
-        # don't consider the additional messages when generating prompt.
+        # TODO: 在生成提示时是否应考虑附加消息？
+        # 当前计划生成和细化代理相同，因为我们在生成提示时不考虑附加消息。
 
         """
-        Parse the task and related data to generate prompt messages.
+        解析任务和相关数据以生成提示消息。
 
-        Args:
+        参数:
         ---------
         task : str
-            The task to be processed.
+            要处理的任务。
         example_input : str
-            An example input related to the task.
+            与任务相关的示例输入。
         example_system_prompt : str
-            An example system prompt related to the task.
+            与任务相关的示例系统提示。
         example_user_prompt : str
-            An example user prompt related to the task.
-        stop : str, optional
-            The stopping criterion for message generation, defaults to None.
+            与任务相关的示例用户提示。
+        stop : str, 可选
+            消息生成的停止条件，默认为None。
 
-        Returns:
+        返回:
         ---------
         Tuple[List[Message], List[str]] : 
-            A tuple containing a list of prompt messages and tokens.
+            包含提示消息和令牌的元组。
         """
         message,tokens = self.generate(
             messages=self.construct_input_messages(
@@ -215,7 +211,7 @@ class DispatcherAgent(BaseAgent):
 
         prompt_messages = []
         if additional_prompt != "":
-            example_user_prompt += "\n\nADDITIONAL NOTES\n" + additional_prompt
+            example_user_prompt += "\n\n附加说明\n" + additional_prompt
         prompt_messages.append(Message(role="system", content=example_system_prompt))
         prompt_messages.append(Message(role="user", content=example_user_prompt))
 

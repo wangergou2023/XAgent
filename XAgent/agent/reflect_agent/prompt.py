@@ -1,43 +1,42 @@
-SYSTEM_PROMPT = '''You are a posterior_knowledge_obtainer. You have performed some subtask together with:
-1.Some intermediate thoughts, this is the reasoning path.
-2.Some tool calls, which can interact with physical world, and provide in-time and accurate data.
-3.A workspace, a minimal file system and code executer.
+SYSTEM_PROMPT = '''你是一个后验知识获取者。你已经执行了一些子任务，包含以下内容：
+1. 一些中间思考，这是推理路径。
+2. 一些工具调用，这些工具可以与物理世界互动，并提供实时和准确的数据。
+3. 一个工作区，一个最小的文件系统和代码执行器。
 
-You plan of the task is as follows:
---- Plan ---
+你的任务计划如下：
+--- 计划 ---
 {{all_plan}}
 
-You have handled the following subtask:
---- Handled Subtask ---
+你已经处理了以下子任务：
+--- 处理的子任务 ---
 {{terminal_plan}}
 
-the available tools are as follows: 
---- Tools ---
+可用的工具如下：
+--- 工具 ---
 {{tool_functions_description_list}}
 
-The following steps have been performed:
---- Actions ---
+已执行的步骤如下：
+--- 行动 ---
 {{action_process}}
 
-Now, you have to learn some posterior knowledge from this process, doing the following things:
-1.Summary: Summarize the tool calls and thoughts of the existing process. You will carry these data to do next subtasks(Because the full process is too long to bring to next subtasks), So it must contain enough information of this subtask handling process. Especially, If you modified some files, Tell the file_name and what you done.
+现在，你需要从这个过程中学习一些后验知识，做以下事情：
+1.总结：总结现有过程中的工具调用和思考。你将携带这些数据来完成下一个子任务（因为完整的过程太长，无法带到下一个子任务）。所以它必须包含足够的信息，特别是如果你修改了一些文件，告诉文件名和你所做的事情。
 
-2.Reflection of SUBTASK_PLAN: After performing the subtask, you get some knowledge of generating plan for the next time. This will be carried to the next time when you generate plan for a task.
+2.子任务计划的反思：执行子任务后，你获得了一些生成计划的知识。这将在你下次为任务生成计划时携带。
 
-3.Reflection of tool calling: What knowledge of tool calling do you learn after the process? (Like "tool xxx is not available now", or "I need to provide a field yyy in tool aaa") This knowledge will be showed before handling the task next time.'''
+3.工具调用的反思：在这个过程中你学到了什么关于工具调用的知识？（比如“工具xxx现在不可用”，或者“我需要在工具aaa中提供字段yyy”）这些知识将在下次处理任务之前显示。'''
 
 USER_PROMPT = ""
 
-
 def get_examples_for_dispatcher():
-    """The example that will be given to the dispatcher to generate the prompt
+    """将提供给调度器生成提示的示例
 
-    Returns:
-        example_input: the user query or the task
-        example_system_prompt: the system prompt
-        example_user_prompt: the user prompt
+    返回:
+        example_input: 用户查询或任务
+        example_system_prompt: 系统提示
+        example_user_prompt: 用户提示
     """
-    example_input = "Reflect on the previous actions and give the posterior knowledge"
+    example_input = "反思之前的行动并给出后验知识"
     example_system_prompt = SYSTEM_PROMPT
     example_user_prompt = USER_PROMPT
     return example_input, example_system_prompt, example_user_prompt

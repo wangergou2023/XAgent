@@ -4,20 +4,19 @@ from XAgent.utils import RequiredAbilities
 from XAgent.message_history import Message
 
 class PlanRefineAgent(PlanGenerateAgent):
-    """PlanRefineAgent is a subclass of PlanGenerateAgent and is involved in refining the plan.
+    """PlanRefineAgent 是 PlanGenerateAgent 的子类，负责精炼计划。
 
-    This class utilizes the required ability of plan refinement to parse information 
-    and generate a refined plan. It includes placeholders as the desired expressions.
+    该类利用计划精炼的所需能力来解析信息并生成精炼的计划。它包括作为所需表达式的占位符。
 
-    Attributes:
-        abilities: A set of required abilities for the Agent. For PlanRefineAgent, it includes plan refinement.
+    属性:
+        abilities: 代理所需能力的集合。对于 PlanRefineAgent，它包括计划精炼。
     """
     abilities = set([RequiredAbilities.plan_refinement])
 
     def parse(
         self,
         placeholders: dict = {},
-        arguments:dict = None,
+        arguments: dict = None,
         functions=None,
         function_call=None,
         stop=None,
@@ -26,35 +25,36 @@ class PlanRefineAgent(PlanGenerateAgent):
         *args,
         **kwargs
     ):
-        """ Parses information in order to refine the existing plan.
+        """ 解析信息以精炼现有计划。
 
-        This method fills in placeholders with corresponding expressions, then prompts and 
-        additional messages are processed and converged into final messages. Finally, the 
-        'generate' method of PlanGenerateAgent class is then invoked on the final messages.
+        该方法用相应的表达式填充占位符，然后处理提示和附加消息并将其合并到最终消息中。最后，调用 PlanGenerateAgent 类的 'generate' 方法生成最终消息。
 
-        Args:
-            placeholders (dict, optional): Desired expressions to fill in partially completed text snippets.
-            arguments (dict, optional): Arguments to the function.
-            functions (optional): Functions to be carried out.
-            function_call (optional): Functional request from the user.
-            stop (optional): Stop parsing at some particular point.
-            additional_messages (List[Message], optional): Additional messages to be included in final message.
-            additional_insert_index (int, optional): Index in prompt messages where additional messages should be inserted.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
+        参数:
+            placeholders (dict, 可选): 用于填充部分完成的文本片段的所需表达式。
+            arguments (dict, 可选): 函数的参数。
+            functions (可选): 要执行的函数。
+            function_call (可选): 来自用户的功能请求。
+            stop (可选): 在某个特定点停止解析。
+            additional_messages (List[Message], 可选): 要包含在最终消息中的附加消息。
+            additional_insert_index (int, 可选): 在提示消息中插入附加消息的索引。
+            *args: 可变长度的参数列表。
+            **kwargs: 任意关键字参数。
 
-        Returns:
-            object: A refined plan generated from provided placeholders, arguments, functions, and messages.
+        返回:
+            object: 由提供的占位符、参数、函数和消息生成的精炼计划。
         """
         
+        # 填充占位符，生成初始提示消息
         prompt_messages = self.fill_in_placeholders(placeholders)
-        messages =prompt_messages[:additional_insert_index] + additional_messages + prompt_messages[additional_insert_index:]
+        # 将附加消息插入到提示消息中的指定位置
+        messages = prompt_messages[:additional_insert_index] + additional_messages + prompt_messages[additional_insert_index:]
         
+        # 调用 generate 方法生成精炼计划并返回结果
         return self.generate(
             messages=messages,
             arguments=arguments,
             functions=functions,
             function_call=function_call,
             stop=stop,
-            *args,**kwargs
+            *args, **kwargs
         )

@@ -1,53 +1,52 @@
-# SYSTEM_PROMPT = """Your task is to devise an appropriate role-based name (_GPT) and a clear prompt for an autonomous agent to successfully complete the assigned task.
+# SYSTEM_PROMPT 是一个多行字符串，它定义了一个系统提示，用于生成适合自动代理完成指定任务的提示。
 
-# The user will provide the task, you will provide only the output in the exact format specified below with no explanation or conversation. Your response should include "Name", "System Prompt" and "User Prompt". The generated prompt should contain all the placeholders that will be filled by the user, including {{system_prompt_placeholders}} in system prompt, and {{user_prompt_placeholders}} in user prompt. These placeholders should be wrapped with {{ and }} in the prompt. Also, you need to keep the important information the same as those specified in the example, such as rules and response format.
-
-# Example input:
+# SYSTEM_PROMPT = """你的任务是设计一个合适的基于角色的名称(_GPT)和一个清晰的提示，以便自动代理成功完成分配的任务。
+# 用户将提供任务，你将只按照指定的格式提供输出，不做任何解释或对话。你的响应应包括“Name”、“System Prompt”和“User Prompt”。生成的提示应包含所有将由用户填写的占位符，包括系统提示中的{{system_prompt_placeholders}}和用户提示中的{{user_prompt_placeholders}}。这些占位符应在提示中用{{和}}包裹。另外，你需要保持示例中指定的重要信息，如规则和响应格式。
+#
+# 示例输入:
 # {{example_input}}
+#
+# 示例输出:
+# 名称：PlannerGPT
+# 系统提示：{{example_system_prompt}}
+# 用户提示：{{example_user_prompt}}"""
 
-# Example output:
-# Name: PlannerGPT
-# System Prompt: {{example_system_prompt}}
-# User Prompt: {{example_user_prompt}}"""
-
-# SYSTEM_PROMPT = """Your task is to refine a prompt for an autonomous agent to successfully complete the assigned task. The user will provide the task, you will provide only the output in the exact format specified below with no explanation or conversation. 
-
-# Below is the current version of prompt:
-# SYSTEM PROMPT:
+# 另一个版本的 SYSTEM_PROMPT，注释掉了：
+# SYSTEM_PROMPT = """你的任务是完善一个提示，以便自动代理成功完成分配的任务。用户将提供任务，你将只按照指定的格式提供输出，不做任何解释或对话。
+#
+# 以下是当前版本的提示：
+# 系统提示：
 # {{example_system_prompt}}
-# USER PROMPT:
+# 用户提示：
 # {{example_user_prompt}}
-
-# Now, please generate additional content that the agent should pay attention to when dealing with the incoming task. Note your generated content will help the agent to avoid some mistakes and more effectively solve the target task. You should only generate the additional content and avoid those unnecessary words.
-
-# Here are some prompts (resources) that maybe helpful for the given task, you could consider them. But they are irrelevant to the upcoming task, please just ignore it:
-# {{retrieved_procedure}}
-
-# Note, you should only generate the ADDITIONAL system prompts, not those existing ones. Make them concise and useful. Do not copy anything that already exist in the given system prompt. Generate new prompts!
+#
+# 现在，请生成代理在处理即将到来的任务时需要注意的附加内容。注意，你生成的内容将帮助代理避免一些错误，更有效地解决目标任务。你应该只生成附加的系统提示，不包括现有的内容。请将其简洁有用。不要复制现有系统提示中的任何内容。生成新的提示！
 # """
 
-SYSTEM_PROMPT = """You are a prompt generator, who is capable of generating prompts for autonomous agents. Now, an agent is assigned the following task:
+# 最终版本的 SYSTEM_PROMPT，定义了一个系统提示，用于生成附加内容帮助代理更有效地完成任务。
+
+SYSTEM_PROMPT = """你是一个提示生成器，能够为自动代理生成提示。现在，代理被分配了以下任务：
 {{task}}
 
-Below is the draft prompt that will be given to the agent:
-SYSTEM PROMPT:
+以下是将提供给代理的草稿提示：
+系统提示：
 ```
 {{example_system_prompt}}
 ```
 
-USER PROMPT:
+用户提示：
 ```
 {{example_user_prompt}}
 ```
 
-Now, please generate additional content that the agent should pay attention to when dealing with the incoming task. Your generated content should help the agent to avoid some mistakes and more effectively solve the target task. 
+现在，请生成代理在处理即将到来的任务时需要注意的附加内容。你生成的内容应帮助代理避免一些错误，更有效地解决目标任务。
 
-You should only generate the ADDITIONAL user prompts, do not include the existing content. Make your additional prompt concise and informative. When responding, you should follow the following response format:
-ADDITIONAL USER PROMPT:
+你应该只生成附加的用户提示，不包括现有的内容。请将你的附加提示简洁且信息丰富。在响应时，你应遵循以下响应格式：
+附加用户提示：
 ```
-Write your additional user prompt here. If there is nothing to add, just set it to a special token "[NONE]".
+在这里写你的附加用户提示。如果没有需要补充的内容，只需设置为特殊标记“[NONE]”。
 ```"""
-# Here are some resources that may be helpful for the given task, you could consider them when responding. If they are irrelevant to the upcoming task, please just ignore it:
+# 以下是一些可能对给定任务有帮助的资源，你可以在响应时考虑它们。如果它们与即将到来的任务无关，请忽略它们：
 # ```
 # {{retrieved_procedure}}
 # ```
